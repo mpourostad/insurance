@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 import json
-# from sklearn.ensemble import RandomForestRegressor
 
 app = Flask(__name__)
 def connect_to_database():
@@ -32,13 +31,13 @@ def connect_to_database():
         return None
 def insert_values(connection, first_name, last_name, age, gender, 
                   bmi, children, smoker, region, medical_history, family_medical_history,
-                  exercise_frequency, occupation, coverage_level, PhoneNumber):
+                  exercise_frequency, occupation, coverage_level, PhoneNumber, prediction):
     try:
         cursor = connection.cursor()
-        query = f"INSERT INTO PotentialCustomers (first_name, last_name, age, gender, bmi, children, smoker, region, medical_history, family_medical_history, exercise_frequency, occupation, coverage_level, PhoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        query = f"INSERT INTO PotentialCustomers (first_name, last_name, age, gender, bmi, children, smoker, region, medical_history, family_medical_history, exercise_frequency, occupation, coverage_level, PhoneNumber, predicted_quotes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         cursor.execute(query, first_name, last_name, age, gender,
         bmi, children, smoker, region, medical_history, family_medical_history, 
-        exercise_frequency, occupation, coverage_level, PhoneNumber)
+        exercise_frequency, occupation, coverage_level, PhoneNumber, prediction)
         connection.commit()
         print("Values inserted successfully.")
     except Exception as e:
@@ -80,14 +79,6 @@ def index():
         coverage_level = request.form["coverage_level"]
         PhoneNumber = request.form["PhoneNumber"]
         
-        connection = connect_to_database()
-        if connection:
-            insert_values(connection, first_name, last_name, age, gender,
-        bmi, children, smoker, region, medical_history, family_medical_history, 
-        exercise_frequency, occupation, coverage_level, PhoneNumber)
-            connection.close()
-
-            # ++++++++++++++++++++++++++++++++++++++++
         loaded_label_mappings = load_label_mappings('../mappings.json') 
         data = {
         'age': [age],
@@ -106,31 +97,31 @@ def index():
         mapped_data = map_features_to_labels(data, loaded_label_mappings)
         df = pd.DataFrame(mapped_data)
         model_data = joblib.load('../trained_model.pkl')
+
+
         try:
             prediction = model_data.predict(df)
             prediction_list = prediction.tolist()
-            
-            return jsonify(prediction_list)
-            
-            return jsonify(prediction)
+            # print("prediction: ", type(prediction[0].item()))
+            # df['predicted_quotes'] = prediction
+
+        
         except Exception as e:
             return jsonify({'error': str(e)})
+        connection = connect_to_database()
+        if connection:
+            insert_values(connection, first_name, last_name, age, gender,
+        bmi, children, smoker, region, medical_history, family_medical_history, 
+        exercise_frequency, occupation, coverage_level, PhoneNumber, prediction[0].item())
+            connection.close()
+
+        return jsonify(prediction_list)
     else:
         return render_template("index.html")
-
-# bb
-
-    # ...
-
-            # ++++++++++++++++++++++++++++++++++++++++++
-    #         return redirect(url_for("success"))
-    
-    # return render_template("index.html")
 
 @app.route("/success")
 def success():
     return "Values inserted successfully."
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0')
     app.run(debug=True)
