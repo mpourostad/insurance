@@ -1,148 +1,13 @@
-import os
-# import pyodbc, struct
-# from azure import identity
 
-# from typing import Union
-# from fastapi import FastAPI
-# from pydantic import BaseModel
-
-# class Person(BaseModel):
-#     First_name: str
-#     Last_name: Union[str, None] = None
-    
-# connection_string = os.environ["AZURE_SQL_CONNECTIONSTRING"]
-
-# app = FastAPI()
-
-# @app.get("/")
-# def root():
-#     print("Root of Person API")
-#     try:
-#         conn = get_conn()
-#         cursor = conn.cursor()
-
-#         # Table should be created ahead of time in production app.
-#         cursor.execute("""
-#             CREATE TABLE Persons (
-#                 ID int NOT NULL PRIMARY KEY IDENTITY,
-#                 FirstName varchar(255),
-#                 LastName varchar(255)
-#             );
-#         """)
-
-#         conn.commit()
-#     except Exception as e:
-#         # Table may already exist
-#         print(e)
-#     return "Insurance API"
-
-# @app.get("/all")
-# def get_persons():
-#     rows = []
-#     with get_conn() as conn:
-#         cursor = conn.cursor()
-#         cursor.execute("SELECT * FROM Persons")
-
-#         for row in cursor.fetchall():
-#             print(row.FirstName, row.LastName)
-#             rows.append(f"{row.ID}, {row.FirstName}, {row.LastName}")
-#     return rows
-
-# @app.get("/person/{person_id}")
-# def get_person(person_id: int):
-#     with get_conn() as conn:
-#         cursor = conn.cursor()
-#         cursor.execute("SELECT * FROM Persons WHERE ID = ?", person_id)
-
-#         row = cursor.fetchone()
-#         return f"{row.ID}, {row.FirstName}, {row.LastName}"
-
-# @app.post("/Person")
-# def create_test(item: Person):
-#     with get_conn() as conn:
-#         cursor = conn.cursor()
-#         cursor.execute(f"INSERT INTO Potential (FirstName, LastName) VALUES (?, ?)", item.First_name, item.Last_name)
-#         conn.commit()
-
-#     return item
-
-# def get_conn():
-#     credential = identity.DefaultAzureCredential(exclude_interactive_browser_credential=False)
-#     token_bytes = credential.get_token("https://database.windows.net/.default").token.encode("UTF-16-LE")
-#     token_struct = struct.pack(f'<I{len(token_bytes)}s', len(token_bytes), token_bytes)
-#     SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
-#     conn = pyodbc.connect(connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
-#     return conn
-# import pyodbc
-
-# # Database connection settings
-# # server = 'sql-mp.database.windows.net'
-# # database = 'mydb'
-# # username = 'mp5737'
-# # password = 'Khametootfarangi78053'
-# # driver = '{ODBC Driver 18 for SQL Server}'
-# server = 'sql-mp.database.windows.net'
-# database = 'mydb'
-# authentication = 'ActiveDirectoryInteractive'
-# driver = '{ODBC Driver 18 for SQL Server}'
-
-# # Establishing a database connection with Azure AD authentication
-# conn = pyodbc.connect(f'DRIVER={driver};SERVER={server};DATABASE={database};Authentication={authentication}')
-
-# # Establishing a database connection
-# # conn = pyodbc.connect(f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}')
-
-# def create_customer(first_name, last_name, minit, street, city, zip_code, dob, gender):
-#     cursor = conn.cursor()
-#     cursor.execute('''
-#         INSERT INTO [dbo].[Customer] ([First_name], [Last_name], [Street], [City], [ZipCode], [DOB], [Gender])
-#         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-#     ''', (first_name, last_name, street, city, zip_code, dob, gender))
-#     conn.commit()
-#     cursor.close()
-
-# def read_customers():
-#     cursor = conn.cursor()
-#     cursor.execute('SELECT * FROM [dbo].[Customer]')
-#     rows = cursor.fetchall()
-#     cursor.close()
-#     return rows
-
-# def update_customer(old_first_name, old_last_name, new_first_name, new_last_name, new_minit, new_street, new_city, new_zip_code, new_dob, new_gender):
-#     cursor = conn.cursor()
-#     cursor.execute('''
-#         UPDATE [dbo].[Customer]
-#         SET [First_name] = ?,
-#             [Last_name] = ?,
-#             [Minit] = ?,
-#             [Street] = ?,
-#             [City] = ?,
-#             [ZipCode] = ?,
-#             [DOB] = ?,
-#             [Gender] = ?
-#         WHERE [First_name] = ? AND [Last_name] = ?
-#     ''', (new_first_name, new_last_name, new_minit, new_street, new_city, new_zip_code, new_dob, new_gender, old_first_name, old_last_name))
-#     conn.commit()
-#     cursor.close()
-
-# def delete_customer(first_name, last_name):
-#     cursor = conn.cursor()
-#     cursor.execute('DELETE FROM [dbo].[Customer] WHERE [First_name] = ? AND [Last_name] = ?', (first_name, last_name))
-#     conn.commit()
-#     cursor.close()
-
-# # Example usage
-# create_customer('John', 'Doe', '123 Main St', 'Cityville', 12345, '1990-01-15', 'Male')
-# customers = read_customers()
-# print(customers)
-# # update_customer('John', 'Doe', 'Jonathan', 'Doe', 'J', '456 Elm St', 'Townsville', 54321, '1985-08-20', 'Male')
-# # delete_customer('Jonathan', 'Doe')
-
-# # Close the database connection
-# conn.close()
-# +++++++++++++++++++++++++++++++++++++++
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import pyodbc
+import joblib
+import numpy as np
+import pandas as pd
+from sklearn import preprocessing
+import json
+# from sklearn.ensemble import RandomForestRegressor
+
 app = Flask(__name__)
 def connect_to_database():
     server = "sql-mp.database.windows.net"
@@ -179,6 +44,24 @@ def insert_values(connection, first_name, last_name, age, gender,
     except Exception as e:
         print(f"Error: {str(e)}")
 
+
+# Load label mappings from a JSON file
+def load_label_mappings(file_path):
+    with open(file_path, 'r') as json_file:
+        label_mappings = json.load(json_file)
+    return label_mappings
+
+# Map features to their corresponding label using label mappings
+def map_features_to_labels(feature_dict, label_mappings):
+    mapped_features = {}
+    for feature, values in feature_dict.items():
+        if feature in label_mappings:
+            mapping = label_mappings[feature]
+            mapped_values = [mapping[value] if value in mapping else value for value in values]
+            mapped_features[feature] = mapped_values
+        else:
+            mapped_features[feature] = values
+    return mapped_features
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -203,13 +86,51 @@ def index():
         bmi, children, smoker, region, medical_history, family_medical_history, 
         exercise_frequency, occupation, coverage_level, PhoneNumber)
             connection.close()
-            return redirect(url_for("success"))
+
+            # ++++++++++++++++++++++++++++++++++++++++
+        loaded_label_mappings = load_label_mappings('../mappings.json') 
+        data = {
+        'age': [age],
+        'gender': [gender],
+        'bmi': [bmi],
+        'children': [children],
+        'smoker': [smoker],
+        'region': [region],
+        'medical_history': [medical_history],
+        'family_medical_history': [family_medical_history],
+        'exercise_frequency': [exercise_frequency],
+        'occupation': [occupation],
+        'coverage_level': [coverage_level],
+        }
+        
+        mapped_data = map_features_to_labels(data, loaded_label_mappings)
+        df = pd.DataFrame(mapped_data)
+        model_data = joblib.load('../trained_model.pkl')
+        try:
+            prediction = model_data.predict(df)
+            prediction_list = prediction.tolist()
+            
+            return jsonify(prediction_list)
+            
+            return jsonify(prediction)
+        except Exception as e:
+            return jsonify({'error': str(e)})
+    else:
+        return render_template("index.html")
+
+# bb
+
+    # ...
+
+            # ++++++++++++++++++++++++++++++++++++++++++
+    #         return redirect(url_for("success"))
     
-    return render_template("index.html")
+    # return render_template("index.html")
 
 @app.route("/success")
 def success():
     return "Values inserted successfully."
 
 if __name__ == "__main__":
+    # app.run(host='0.0.0.0')
     app.run(debug=True)

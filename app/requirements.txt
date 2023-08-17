@@ -5,3 +5,5 @@ pydantic
 azure-identity
 pyodbc
 flask
+joblib
+numpy
