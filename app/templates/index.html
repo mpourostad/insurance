@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Insurance Quotes</title>
+</head>
+<body>
+    <h1>Health Insurance Quotes</h1>
+    <form method="post">
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" required><br>
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" required><br>
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br>
+        <label for="gender">Gender:</label>
+        <input type="radio" id="female" name="gender" value="female" required>
+        <label for="female">Female</label>
+        <input type="radio" id="male" name="gender" value="male" required>
+        <label for="male">Male</label>
+        <br>
+        <label for="bmi">BMI:</label>
+        <input type="number" id="bmi" name="bmi" required><br>
+        <label for="children">Children:</label>
+        <input type="number" id="children" name="children" required><br>
+        <label for="smoker">Smoker:</label>
+        <input type="radio" id="smoker_yes" name="smoker" value="yes" required>
+        <label for="smoker_yes">Yes</label>
+        <input type="radio" id="smoker_no" name="smoker" value="no" required>
+        <label for="smoker_no">No</label>
+        <br>
+        <label for="region">Region:</label>
+        <select id="region" name="region" required>
+            <option value="" disabled selected>Select a region...</option>
+            <option value="southeast">Southeast</option>
+            <option value="northwest">Northwest</option>
+            <option value="southwest">Southwest</option>
+            <option value="northeast">Northeast</option>
+        </select>
+        <br>
+        <label for="medical_history">Medical History:</label>
+        <select id="medical_history" name="medical_history" required>
+            <option value="" disabled selected> Select...</option>
+            <option value="Diabetes">Diabetes</option>
+            <option value="High blood pressure">High blood pressure</option>
+            <option value="Heart disease">Heart disease</option>
+            <option value="None">None</option>
+        </select>
+        <br>
+        <label for="family_medical_history">Family Medical History:</label>
+        <select id="family_medical_history" name="family_medical_history" required>
+            <option value="" disabled selected> Select...</option>
+            <option value="Diabetes">Diabetes</option>
+            <option value="High blood pressure">High blood pressure</option>
+            <option value="Heart disease">Heart disease</option>
+            <option value="None">None</option>
+        </select>
+        <br>
+        <label for="exercise_frequency">Exercise Frequency:</label>
+        <select id="exercise_frequency" name="exercise_frequency" required>
+            <option value="" disabled selected> Select...</option>
+            <option value="Never">Never</option>
+            <option value="Occasionally">Occasionally</option>
+            <option value="Rarely">Rarely</option>
+            <option value="Frequently">Frequently</option>
+        </select>
+        <br>
+        <label for="occupation">occupation:</label>
+        <select id="occupation" name="occupation" required>
+            <option value="" disabled selected> Select...</option>
+            <option value="Blue collar">Blue collar</option>
+            <option value="White collar">White collar</option>
+            <option value="Student">Student</option>
+            <option value="Unemployed">Unemployed</option>
+        </select>
+        <br>
+
+        <label for="coverage_level">coverage level:</label>
+        <select id="coverage_level" name="coverage_level" required>
+            <option value="" disabled selected> Select...</option>
+            <option value="Premium">Premium</option>
+            <option value="Standard">Standard</option>
+            <option value="Basic">Basic</option>
+        </select>
+        <br>
+        <label for="PhoneNumber">Phone Number:</label>
+        <input type="tel" id="PhoneNumber" name="PhoneNumber" pattern="[0-9]{10}" placeholder="Optional">
+        <br>
+        
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
